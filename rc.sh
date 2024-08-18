@@ -994,6 +994,9 @@ function checkStatus(){
 	status=`systemctl is-active hihy`
     if [ "${status}" = "active" ];then
 		echoColor green "hysteria正常运行"
+	status=`rc-service hihy status`
+	elif [ "${status}" = *"started"* ];then
+		echoColor green "hysteria正常运行"	
 	else
 		echoColor red "Dead!hysteria未正常运行!"
 	fi
@@ -1146,7 +1149,7 @@ function allowPort() {
 			firewall-cmd --reload
 		fi
 
-	elif rc-service firewalld status 2>/dev/null | grep -q "status: started"; then
+	elif rc-service firewalld status 2>/dev/null | grep -q *"status: started"*; then
 		local updateFirewalldStatus=
 		if ! firewall-cmd --list-ports --permanent | grep -qw "${2}/${1}"; then
 			updateFirewalldStatus=true
@@ -1167,7 +1170,7 @@ function delPortHoppingNat(){
 	if systemctl status firewalld 2>/dev/null | grep -q "active (running)"; then
 		firewall-cmd --permanent --remove-forward-port=port=$1-$2:proto=udp:toport=$3
 		firewall-cmd --reload
-	elif rc-service firewalld status 2>/dev/null | grep -q "status: started"; then
+	elif rc-service firewalld status 2>/dev/null | grep -q *"status: started"*; then
 		firewall-cmd --permanent --remove-forward-port=port=$1-$2:proto=udp:toport=$3
 		firewall-cmd --reload
 	else
@@ -1231,7 +1234,7 @@ function addPortHoppingNat() {
 		fi
 		firewall-cmd --add-forward-port=port=$1-$2:proto=udp:toport=$3 --permanent 2>/dev/null
 		firewall-cmd --reload 2>/dev/null
-	elif rc-service firewalld status 2>/dev/null | grep -q "status: started"; then
+	elif rc-service firewalld status 2>/dev/null | grep -q *"status: started"*; then
 		if ! firewall-cmd --query-masquerade --permanent 2>/dev/null | grep -q "yes"; then
 			firewall-cmd --add-masquerade --permanent 2>/dev/null
 			firewall-cmd --reload 2>/dev/null
@@ -1289,7 +1292,7 @@ function delHihyFirewallPort() {
 		if echo "${updateFirewalldStatus}" | grep -q "true"; then
 			firewall-cmd --reload 2> /dev/null
 		fi
-	elif rc-service firewalld status 2>/dev/null | grep -q "status: started"; then
+	elif rc-service firewalld status 2>/dev/null | grep -q *"status: started"*; then
 		local updateFirewalldStatus=
 		isFaketcp=`cat /etc/hihy/conf/hihyServer.json | grep "faketcp"`
 		if [ -z "${isFaketcp}" ];then
