@@ -151,7 +151,7 @@ function printMsg(){
 
 function hihy(){
 	if [ ! -f "/usr/bin/hihy" ]; then
-  		wget -q -O /usr/bin/hihy --no-check-certificate https://raw.githubusercontent.com/iokiko/hihy/main/Gentoo-Install.sh
+  		wget -q -O /usr/bin/hihy --no-check-certificate https://raw.githubusercontent.com/Goiferrnil/gthihy/main/rc.sh
 		chmod +x /usr/bin/hihy
 	fi	
 }
@@ -950,7 +950,7 @@ function hihyUpdate(){
 		echoColor green "Already the latest version.Ignore."
 	else
 		rm -r /usr/bin/hihy
-		wget -q -O /usr/bin/hihy --no-check-certificate https://raw.githubusercontent.com/emptysuns/Hi_Hysteria/main/server/install.sh 2>/dev/null
+		wget -q -O /usr/bin/hihy --no-check-certificate https://raw.githubusercontent.com/Goiferrnil/gthihy/main/rc.sh 2>/dev/null
 		chmod +x /usr/bin/hihy
 		echoColor green "Done."
 	fi
@@ -1231,7 +1231,7 @@ function addPortHoppingNat() {
 		fi
 		firewall-cmd --add-forward-port=port=$1-$2:proto=udp:toport=$3 --permanent 2>/dev/null
 		firewall-cmd --reload 2>/dev/null
-	if rc-service firewalld status 2>/dev/null | grep -q "status: started"; then
+	elif rc-service firewalld status 2>/dev/null | grep -q "status: started"; then
 		if ! firewall-cmd --query-masquerade --permanent 2>/dev/null | grep -q "yes"; then
 			firewall-cmd --add-masquerade --permanent 2>/dev/null
 			firewall-cmd --reload 2>/dev/null
