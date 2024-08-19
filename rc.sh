@@ -184,7 +184,14 @@ function changeIp64(){
             if [ -z "${input}" ];then
                 echoColor green "Ignore."
                 exit
+
+
             else
+            	if 
+            	sed -i 's/"resolve_preference": "46",/"resolve_preference": "64",/g' /etc/hihy/conf/hihyServer.json
+                rc-service hihy restart
+                echoColor green "Done.Ipv6 first now."
+            	fi
                 sed -i 's/"resolve_preference": "46",/"resolve_preference": "64",/g' /etc/hihy/conf/hihyServer.json
                 systemctl restart hihy
                 echoColor green "Done.Ipv6 first now."
@@ -989,17 +996,24 @@ function hyCoreNotify(){
 }
 
 
-function checkStatus(){
+function checkStatus() {
+    if command -v systemctl &> /dev/null; then
+        status=$(systemctl is-active hihy 2>/dev/null)
+        if [ "${status}" = "active" ]; then
+            echoColor green "hysteria正常运行 (systemd)"
+            return
+        fi
+    fi
 
-	status=`systemctl is-active hihy`
-    if [ "${status}" = "active" ];then
-		echoColor green "hysteria正常运行"
-	status=`rc-service hihy status`
-	elif [ "${status}" = *"started"* ];then
-		echoColor green "hysteria正常运行"	
-	else
-		echoColor red "Dead!hysteria未正常运行!"
-	fi
+    if command -v rc-service &> /dev/null; then
+        status=$(rc-service hihy status 2>/dev/null)
+        if [[ "${status}" == *"started"* ]]; then
+            echoColor green "hysteria正常运行 (OpenRC)"
+            return
+        fi
+    fi
+
+    echoColor red "Dead!hysteria未正常运行!"
 }
 
 function install()
@@ -1063,6 +1077,11 @@ EOF
     chmod +x /etc/init.d/hihy
     rc-update add hihy default
     rc-service syslog-ng restart
+    crontab -l > /tmp/crontab.tmp
+    echo  "15 4 * * 1,4 hihy cronTask" >> /tmp/crontab.tmp
+    crontab /tmp/crontab.tmp
+    rm /tmp/crontab.tmp
+    printMsg
     else
         cat <<EOF >/etc/systemd/system/hihy.service
 [Unit]
