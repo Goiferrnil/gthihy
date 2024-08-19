@@ -1022,29 +1022,24 @@ function install()
 
     if grep </etc/issue -q -i "gentoo" && [[ -f "/etc/issue" ]] || grep </proc/version -q -i "gentoo"; then
         cat <<EOF >/etc/init.d/hihy
-#!/sbin/runscript
+#!/sbin/openrc-run
+
+name="hihy"
+description="hihy 服务"
+command="/etc/hihy/bin/appS"
+command_args="--log-level info -c /etc/hihy/conf/hihyServer.json server"
+pidfile="/run/${RC_SVCNAME}.pid"
+command_background="yes"
+output_log="/var/log/hihy.log"
+error_log="/var/log/hihy.log"
 
 depend() {
-    need localmount
-    need net
+    need net localmount
+    use logger
 }
 
-start() {
-    ebegin "Starting hihy"
-    start-stop-daemon --start --background --exec /etc/hihy/bin/appS -- \
-      --log-level info -c /etc/hihy/conf/hihyServer.json server >> /var/log/hihy.log 2>&1
-    eend $?
-}
-
-stop() {
-    ebegin "Stopping hihy"
-    start-stop-daemon --stop --exec /etc/hihy/bin/appS
-    eend $?
-}
-
-restart() {
-    svc_stop
-    svc_start
+start_pre() {
+    checkpath -f -m 0644 -o root:root "$output_log"
 }
 
 
