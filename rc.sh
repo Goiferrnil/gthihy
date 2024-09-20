@@ -158,46 +158,38 @@ function hihy(){
 
 function changeIp64(){
     if [ ! -f "/etc/hihy/conf/hihyServer.json" ]; then
-  		echoColor red "未正常安装hihy!"
+        echoColor red "未正常安装hihy!"
         exit
-	fi 
-	now=`cat /etc/hihy/conf/hihyServer.json | grep "resolve_preference"`
+    fi 
+    now=$(grep "resolve_preference" /etc/hihy/conf/hihyServer.json)
     case ${now} in 
-		*"64"*)
-			echoColor purple "当前ipv6优先"
+        *"64"*)
+            echoColor purple "当前ipv6优先"
             echoColor yellow " \n->设置ipv4优先级高于ipv6?(Y/N,默认N)"
             read input
-            if [ -z "${input}" ];then
+            if [ -z "${input}" ]; then
                 echoColor green "Ignore."
                 exit
             else
                 sed -i 's/"resolve_preference": "64"/"resolve_preference": "46"/g' /etc/hihy/conf/hihyServer.json
                 systemctl restart hihy
-                echoColor green "Done.Ipv4 first now."
-            fi
-            
-		;;
-		*"46"*)
-			echoColor purple "当前ipv4优先"
-            echoColor yellow " \n->设置ipv6优先级高于ipv4?(Y/N,默认N)"
-            read input
-            if [ -z "${input}" ];then
-                echoColor green "Ignore."
-                exit
-
-
-            else
-            	if 
-            	sed -i 's/"resolve_preference": "46",/"resolve_preference": "64",/g' /etc/hihy/conf/hihyServer.json
-                rc-service hihy restart
-                echoColor green "Done.Ipv6 first now."
-            	fi
-                sed -i 's/"resolve_preference": "46",/"resolve_preference": "64",/g' /etc/hihy/conf/hihyServer.json
-                systemctl restart hihy
-                echoColor green "Done.Ipv6 first now."
+                echoColor green "Done. Ipv4 first now."
             fi
         ;;
-	esac
+        *"46"*)
+            echoColor purple "当前ipv4优先"
+            echoColor yellow " \n->设置ipv6优先级高于ipv4?(Y/N,默认N)"
+            read input
+            if [ -z "${input}" ]; then
+                echoColor green "Ignore."
+                exit
+            else
+                sed -i 's/"resolve_preference": "46"/"resolve_preference": "64"/g' /etc/hihy/conf/hihyServer.json
+                systemctl restart hihy
+                echoColor green "Done. Ipv6 first now."
+            fi
+        ;;
+    esac
 }
 
 function getPortBindMsg(){
